@@ -19,6 +19,7 @@ class TIPO_DATO(Enum) :
     ERROR = 9
     UNARIO = 10
     ABS = 11
+    METODO =12
 class Simbolo() :
     'Esta clase representa un simbolo dentro de nuestra tabla de simbolos'
 
@@ -38,14 +39,14 @@ class TablaDeSimbolos() :
     
     def obtener(self, id) :
         if not id in self.simbolos :
-            print('Error: variable ', id, ' no definida.')
+            print('Error obtener: variable ', id, ' no definida.')
             
 
         return self.simbolos[id]
 
     def actualizar(self, simbolo) :
         if not simbolo.id in self.simbolos :
-            print('Error: variable ', simbolo.id, ' no definida.')
+            print('Error actualizar: variable ', simbolo.id, ' no definida.')
         else :
             self.simbolos[simbolo.id] = simbolo
     def existe(self, simbolo):
@@ -59,3 +60,5 @@ class TablaDeSimbolos() :
         else:
             print("temporal borrado: ",id)
             self.simbolos.pop(id)
+    
+        

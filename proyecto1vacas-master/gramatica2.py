@@ -1,6 +1,6 @@
 reservadas = {
     'numero' : 'NUMERO',
-    'imprimir' : 'IMPRIMIR',
+    'print' : 'IMPRIMIR',
     'mientras' : 'MIENTRAS',
     'abs' : 'ABS',
     'unset' : 'UNSET',
@@ -8,15 +8,21 @@ reservadas = {
     'float' : 'FLOAT',
     'char' : 'CHAR',
     'if' : 'IF',
-    'else' : 'ELSE'
+    'xor' : 'XOR',
+    'array' : 'ARRAY',
+    'goto' : 'GOTO',
+    'exit' : 'EXIT'
 }
 
 tokens  = [
     'PTCOMA',
+    'DOSPUNTOS',
     'LLAVIZQ',
     'LLAVDER',
     'PARIZQ',
     'PARDER',
+    'CORIZQ',
+    'CORDER',
     'IGUAL',
     'MAS',
     'MENOS',
@@ -32,6 +38,11 @@ tokens  = [
     'CADENA',
     'ID',
     'TEMP',
+    'PARAM',
+    'VAL',
+    'PILA',
+    'PUNTERO',
+    'DIR',
     'CARACTER',
     'RESIDUO',
     'NOT',
@@ -40,7 +51,7 @@ tokens  = [
     'ANDBIT',
     'OR',
     'ORBIT',
-    'XOR',
+    
     'XORBIT',
     'MENORBIT',
     'MAYORBIT',
@@ -51,10 +62,13 @@ tokens  = [
 
 # Tokens
 t_PTCOMA    = r';'
+t_DOSPUNTOS = r':'
 t_LLAVIZQ   = r'{'
 t_LLAVDER   = r'}'
 t_PARIZQ    = r'\('
 t_PARDER    = r'\)'
+t_CORIZQ    = r'\['
+t_CORDER    = r'\]'
 t_IGUAL     = r'='
 t_MAS       = r'\+'
 t_MENOS     = r'-'
@@ -65,8 +79,8 @@ t_NOTBIT = r'\~'
 t_CONCAT    = r'&y'
 t_AND = r'&&'
 t_ANDBIT = r'&'
-t_XOR = r'\^'
-t_XORBIT = r'xor'
+
+t_XORBIT = r'\^'
 t_MENORBIT = r'<<'
 t_MAYORBIT = r'>>'
 t_OR = r'\|\|'
@@ -107,7 +121,33 @@ def t_TEMP(t):
      r'\$t[0-9]+'
      t.type = reservadas.get(t.value.lower(),'TEMP')    # Check for reserved words
      return t
+
+def t_PARAM(t):
+     r'\$a[0-9]+'
+     t.type = reservadas.get(t.value.lower(),'PARAM')    # Check for reserved words
+     return t   
+
+def t_VAL(t):
+     r'\$v[0-9]+'
+     t.type = reservadas.get(t.value.lower(),'VAL')    # Check for reserved words
+     return t
      
+def t_PILA(t):
+     r'\$s[0-9]+'
+     t.type = reservadas.get(t.value.lower(),'PILA')    # Check for reserved words
+     return t
+     
+def t_PUNTERO(t):
+     r'\$sp'
+     t.type = reservadas.get(t.value.lower(),'PUNTERO')    # Check for reserved words
+     return t
+
+def t_DIR(t):
+     r'\$ra'
+     t.type = reservadas.get(t.value.lower(),'DIR')    # Check for reserved words
+     return t
+     
+
 def t_CADENA(t):
     r'\".*?\"'
     t.value = t.value[1:-1] # remuevo las comillas
@@ -184,13 +224,29 @@ def p_instrucciones_instruccion(t) :
 def p_instruccion(t) :
     '''instruccion      : imprimir_instr                                           
                         | asignacion_temp
+                        | asignacion_param
+                        | asignacion_val
+                        | asignacion_dir
+                        | asignacion_pila
+                        | asignacion_puntero
                         | borrar_temp
                         | if_instr
-                        | if_else_instr'''
+                        | metodo
+                        | goto
+                        | exit'''
     t[0] = t[1]
 
+
+def p_definir_exit(t):
+    'exit : EXIT PTCOMA'
+    t[0] = Exit(t[1])
+def p_definir_metodo(t):
+    'metodo : ID DOSPUNTOS'
+    t[0] = Definicion_Metodo(t[1])
+   
+
 def p_instruccion_imprimir(t) :
-    'imprimir_instr     : IMPRIMIR PARIZQ expresion_cadena PARDER PTCOMA'
+    'imprimir_instr     : IMPRIMIR PARIZQ expresion_numerica PARDER PTCOMA'
     t[0] =Imprimir(t[3])
 
 def p_borrar_temp(t):
@@ -202,14 +258,55 @@ def p_asignacion_temporal(t):
     
     t[0] = Definicion_Asignacion(t[1], t[3])
 
+def p_asignacion_parametro(t):
+    'asignacion_param   : PARAM IGUAL expresion_numerica PTCOMA'
+    
+    t[0] = Definicion_Asignacion(t[1], t[3])
 
+def p_asignacion_val(t):
+    'asignacion_val   : VAL IGUAL expresion_numerica PTCOMA'
+    
+    t[0] = Definicion_Asignacion(t[1], t[3])
+
+def p_asignacion_dir(t):
+    'asignacion_dir   : DIR IGUAL expresion_numerica PTCOMA'
+    
+    t[0] = Definicion_Asignacion(t[1], t[3])
+
+def p_asignacion_pila(t):
+    'asignacion_pila   : PILA IGUAL expresion_numerica PTCOMA'
+    
+    t[0] = Definicion_Asignacion(t[1], t[3])
+
+def p_asignacion_puntero(t):
+    'asignacion_puntero   : PUNTERO IGUAL expresion_numerica PTCOMA'
+    
+    t[0] = Definicion_Asignacion(t[1], t[3])
+
+
+def p_asignacion_arreglo_multi(t):
+    'asignacion_temp : TEMP dimensiones IGUAL expresion_numerica PTCOMA'
+    t[0] = Definicion_Asignacion_Arreglo_Multiple(t[1],t[2],t[4])
+
+def p_acceso_arreglo(t):
+    'expresion_numerica : TEMP dimensiones'
+    t[0] = AccesoArreglo(t[1],t[2])
+    
+def p_dimensiones_lista(t):
+    'dimensiones : dimensiones dimension'
+    t[1].append(t[2])
+    t[0] = t[1]
+
+def p_dimensiones(t)    :
+    'dimensiones : dimension'
+    t[0] = [t[1]]
+def p_dimension(t):
+    'dimension : CORIZQ expresion_numerica CORDER'
+    t[0]= t[2]
+    
 def p_if_instr(t) :
-    'if_instr  : IF PARIZQ expresion_logica PARDER LLAVIZQ instrucciones LLAVDER'
-    t[0] =If(t[3], t[6])
-
-def p_if_else_instr(t) :
-    'if_else_instr      : IF PARIZQ expresion_logica PARDER LLAVIZQ instrucciones LLAVDER ELSE LLAVIZQ instrucciones LLAVDER'
-    t[0] =IfElse(t[3], t[6], t[10])
+    'if_instr  : IF PARIZQ expresion_numerica PARDER expresion_numerica'
+    t[0] =If(t[3], t[5])
 
 
 
@@ -246,10 +343,26 @@ def p_expresion_binaria_logica(t):
     elif t[2] == '||': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.OR)
     elif t[2] == 'xor': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.XOR)
 
+def p_expresion_binaria_bit(t):
+    '''expresion_numerica : expresion_numerica ANDBIT expresion_numerica
+                        | expresion_numerica ORBIT expresion_numerica
+                        | expresion_numerica XORBIT expresion_numerica
+                        | expresion_numerica MAYORBIT expresion_numerica
+                        | expresion_numerica  MENORBIT expresion_numerica'''
+    if t[2] == '&'  : t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.ANDBIT)
+    elif t[2] == '|': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.ORBIT)
+    elif t[2] == '^': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.XORBIT)
+    elif t[2] == '<<': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.MENORBIT)
+    elif t[2] == '>>': t[0] = ExpresionBinaria(t[1], t[3], OPERACION_LOGICA.MAYORBIT)        
+    
 def p_expresion_not(t):
     'expresion_numerica : NOT expresion_numerica'
     t[0] = ExpresionNot(t[2])
 
+def p_expresion_notbit(t):
+    'expresion_numerica : NOTBIT expresion_numerica'
+    t[0] = ExpresionNotBit(t[2])
+    
 def p_conversion_int(t):
     'expresion_numerica : PARIZQ INT PARDER expresion_numerica'
     t[0] = ExpresionConversionInt(t[4])
@@ -274,6 +387,14 @@ def p_expresion_agrupacion(t):
     'expresion_numerica : PARIZQ expresion_numerica PARDER'
     t[0] = t[2]
 
+def p_goto_lbl(t):
+    'goto : expresion_numerica'
+    t[0] = t[1]
+def p_goto(t):
+    'expresion_numerica : GOTO expresion_numerica PTCOMA'
+    t[0] = Goto(t[2])
+
+
 def p_expresion_number(t):
     'expresion_numerica : ENTERO'
     t[0] = ExpresionEntero(t[1], TS.TIPO_DATO.NUMERO) 
@@ -284,7 +405,29 @@ def p_expresion_decimal(t):
 def p_expresion_id(t):
     'expresion_numerica   : TEMP'
     t[0] = ExpresionIdentificador(t[1])
+def p_expresion_id_labl(t):
+    'expresion_numerica   : ID'
+    t[0] = ExpresionIdentificador(t[1])
 
+def p_expresion_id_param(t):
+    'expresion_numerica   : PARAM'
+    t[0] = ExpresionIdentificador(t[1])
+
+def p_expresion_id_val(t):
+    'expresion_numerica   : VAL'
+    t[0] = ExpresionIdentificador(t[1])
+    
+def p_expresion_id_dir(t):
+    'expresion_numerica   : DIR'
+    t[0] = ExpresionIdentificador(t[1])
+    
+def p_expresion_id_pila(t):
+    'expresion_numerica   : PILA'
+    t[0] = ExpresionIdentificador(t[1])
+
+def p_expresion_id_puntero(t):
+    'expresion_numerica   : PUNTERO'
+    t[0] = ExpresionIdentificador(t[1])
     
 def p_expresion_concatenacion(t) :
     'expresion_cadena     : expresion_cadena CONCAT expresion_cadena'
@@ -301,23 +444,27 @@ def p_expresion_cadena_numerico(t) :
     'expresion_cadena     : expresion_numerica'
     t[0] = ExpresionCadenaNumerico(t[1])
 
-def p_expresion_logica(t) :
-    '''expresion_logica : expresion_numerica MAYQUE expresion_numerica
-                        | expresion_numerica MENQUE expresion_numerica
-                        | expresion_numerica IGUALQUE expresion_numerica
-                        | expresion_numerica NIGUALQUE expresion_numerica'''
-    if t[2] == '>'    : t[0] = ExpresionLogica(t[1], t[3], OPERACION_LOGICA.MAYOR_QUE)
-    elif t[2] == '<'  : t[0] = ExpresionLogica(t[1], t[3], OPERACION_LOGICA.MENOR_QUE)
-    elif t[2] == '==' : t[0] = ExpresionLogica(t[1], t[3], OPERACION_LOGICA.IGUAL)
-    elif t[2] == '!=' : t[0] = ExpresionLogica(t[1], t[3], OPERACION_LOGICA.DIFERENTE)
+def p_expresion_arreglo(t):
+    'expresion_numerica : ARRAY PARIZQ PARDER'
+    t[0] = ExpresionArreglo(0,TS.TIPO_DATO.ARREGLO)
 
 def p_error(t):
     print(t)
     print("Error sintáctico en '%s'" % t.value)
-
+    
+    while True:
+        to=parser.token()
+        #print("esto trae el token siguiente: ",to.type)
+        if not to or to.type == 'PTCOMA' : break
+    parser.errok()
+    
+    return to
+        
+        
 import ply.yacc as yacc
 parser = yacc.yacc()
 
 
 def parse(input) :
     return parser.parse(input)
+

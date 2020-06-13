@@ -24,6 +24,12 @@ class OPERACION_LOGICA(Enum) :
     AND = 6
     OR = 7
     XOR = 8
+    NOTBIT=9
+    ANDBIT = 10
+    ORBIT = 11
+    XORBIT =12
+    MENORBIT = 13
+    MAYORBIT = 14
 class OPERACION_RELACIONAL(Enum):
     MAYOR_QUE = 1
     MENOR_QUE = 2
@@ -40,6 +46,17 @@ class ExpresionEntero:
     def __init__(self, val = 0, tipo = 0):
         self.val = val
         self.tipo = tipo
+
+class ExpresionArreglo:
+    def __init__(self, val = 0, tipo = 0):
+        self.val = val
+        self.tipo = tipo
+        
+class AccesoArreglo(ExpresionNumerica):
+    def __init__(self, id, expNumerica ) :
+        self.id = id
+        self.expNumerica = expNumerica
+    
 
 class ExpresionBinaria(ExpresionNumerica) :
     '''
@@ -66,6 +83,10 @@ class ExpresionConversionChar(ExpresionNumerica):
     def __init__(self,id = ""):
         self.id = id
 class ExpresionNot(ExpresionNumerica):
+    def __init__(self,id = ""):
+        self.id = id
+
+class ExpresionNotBit(ExpresionNumerica):
     def __init__(self,id = ""):
         self.id = id
 class ExpresionNegativo:
@@ -158,3 +179,4 @@ class ExpresionLogica() :
         self.exp1 = exp1
         self.exp2 = exp2
         self.operador = operador
+

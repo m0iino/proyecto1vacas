@@ -62,6 +62,29 @@ class Definicion_Asignacion(Instruccion) :
         self.expNumerica = expNumerica
 
 
+class Definicion_Asignacion_Arreglo(Instruccion) :
+    '''
+        Esta clase representa la instrucción de asignación de variables
+        Recibe como parámetro el identificador a asignar y el valor que será asignado.
+    '''
+
+    def __init__(self, id, expNumerica , expNumerica2) :
+        self.id = id
+        self.expNumerica = expNumerica
+        self.expNumerica2 = expNumerica2
+
+class Definicion_Asignacion_Arreglo_Multiple(Instruccion) :
+    '''
+        Esta clase representa la instrucción de asignación de variables
+        Recibe como parámetro el identificador a asignar y el valor que será asignado.
+    '''
+
+    def __init__(self, id, expNumerica , expNumerica2) :
+        self.id = id
+        self.expNumerica = expNumerica
+        self.expNumerica2 = expNumerica2
+
+
 class If(Instruccion) : 
     '''
         Esta clase representa la instrucción if.
@@ -69,19 +92,21 @@ class If(Instruccion) :
         de instrucciones a ejecutar si la expresión lógica es verdadera.
     '''
 
-    def __init__(self, expLogica, instrucciones = []) :
-        self.expLogica = expLogica
+    def __init__(self, expNumerica, expNumerica2) :
+        self.expNumerica = expNumerica
+        self.expNumerica2 = expNumerica2
+
+
+class Definicion_Metodo(Instruccion):
+    def __init__(self, id, instrucciones = []):
+        self.id = id
         self.instrucciones = instrucciones
-
-class IfElse(Instruccion) : 
-    '''
-        Esta clase representa la instrucción if-else.
-        La instrucción if-else recibe como parámetro una expresión lógica y la lista
-        de instrucciones a ejecutar si la expresión lógica es verdadera y otro lista de instrucciones
-        a ejecutar si la expresión lógica es falsa.
-    '''
-
-    def __init__(self, expLogica, instrIfVerdadero = [], instrIfFalso = []) :
-        self.expLogica = expLogica
-        self.instrIfVerdadero = instrIfVerdadero
-        self.instrIfFalso = instrIfFalso
+        
+class Goto(Instruccion):
+    def __init__(self,metodo):
+        self.metodo= metodo
+        
+class Exit(Instruccion):
+    def __init__(self, expNumerica):
+        self.expNumerica = expNumerica
+        
