@@ -9,10 +9,16 @@ import gramatica2 as g
 import ts as TS
 from expresiones import *
 from instrucciones import *
+from anytree import Node, RenderTree
+from anytree.exporter import DotExporter
+from anytree.exporter import UniqueDotExporter
+cont = 0
+def procesar_imprimir(instr,padre, ts) :
+    val = resolver_expresion_aritmetica(instr.cad, ts)
+    print('> ', val)
+    nodo = Node(val, parent=padre)
 
-def procesar_imprimir(instr, ts) :
-    print('> ', resolver_expresion_aritmetica(instr.cad, ts))
-
+    
 def procesar_borrar(instr,ts):
     #print("procesar borrar: ")
     ts.borrar(instr.cad.id)
@@ -22,7 +28,7 @@ def procesar_definicion(instr, ts) :
     simbolo = TS.Simbolo(instr.id, TS.TIPO_DATO.NUMERO, 0)      # inicializamos con 0 como valor por defecto
     ts.agregar(simbolo)
 
-def procesar_asignacion(instr, ts) :
+def procesar_asignacion(instr,padre, ts) :
     val = resolver_expresion_aritmetica(instr.expNumerica, ts)
     if instr.expNumerica.tipo == 9 :
         #print("error de tipos")
@@ -40,8 +46,10 @@ def procesar_asignacion(instr, ts) :
            # print("no existe se guarda en ts")
             simbolo = TS.Simbolo(instr.id, instr.expNumerica.tipo, val)
             ts.agregar(simbolo)
-
-def procesar_asignacion_arreglo(instr,ts):
+    hijo1 = Node(instr.id,parent=padre)
+    hijo2 = Node(val,parent=padre)
+ 
+def procesar_asignacion_arreglo(instr,padre,ts):
     ind = resolver_expresion_aritmetica(instr.expNumerica, ts)
     val = resolver_expresion_aritmetica(instr.expNumerica2, ts)
     #print("procesar asignacion en arreglo",instr.id,"indice:",ind,"valor: ", val)
@@ -120,9 +128,11 @@ def procesar_asignacion_arreglo(instr,ts):
                 
             simbolo = TS.Simbolo(instr.id, TS.TIPO_DATO.ARREGLO, arreglo)
             ts.agregar(simbolo)
-            
+
+    hijo1 = Node(instr.id,parent=padre)
+    hijo2 = Node(arreglo,parent=padre)        
         
-def procesar_asignacion_arreglo_mul(instr, ts):
+def procesar_asignacion_arreglo_mul(instr,padre, ts):
     #print("lista dimensiones:",instr.expNumerica,"expresion:",instr.expNumerica2)
     if ts.existe(instr):
         #print("existe",instr.id)
@@ -182,17 +192,21 @@ def procesar_asignacion_arreglo_mul(instr, ts):
         simbolo = TS.Simbolo(instr.id, TS.TIPO_DATO.ARREGLO,diccionario)
         ts.agregar(simbolo)
         #print("simbolo",simbolo)
-       
+    hijo1 = Node(instr.id,parent=padre)
+    hijo2 = Node(diccionario,parent=padre)   
             
 
 
-def procesar_if(instr,instrucciones, ts) :
+def procesar_if(instr,instrucciones,padre, ts) :
     #print("procesando if exp1:",instr.expNumerica," exp2:", instr.expNumerica2)
     val = resolver_expresion_aritmetica(instr.expNumerica,ts)
+    hijo1 = Node(val,parent=padre)
+    print("padre es:",padre.ancestors)
     if val == 1:
         #print("expresion relacional es 1:")
         #print("ahora el goto",instr.expNumerica2)
-        procesar_goto(instr.expNumerica2,instrucciones,ts)
+        procesar_goto(instr.expNumerica2,instrucciones,padre.root,ts)
+        hijo2 = Node("goto "+str(instr.expNumerica2.metodo.id),parent=padre)
         return 1
     else:
         return 0
@@ -207,7 +221,7 @@ def procesar_metodo(instr, ts):
     #ts_local = TS.TablaDeSimbolos(ts.simbolos)
     #procesar_instrucciones(instr.instrucciones, ts_local)
     
-def procesar_goto(instr,instrucciones,ts):
+def procesar_goto(instr,instrucciones,padre,ts):
     #print("procesando goto",instr.metodo.id)
     #print("instrucciones  globales:",instrucciones)
     instr_restantes = []
@@ -219,7 +233,8 @@ def procesar_goto(instr,instrucciones,ts):
             if instr.metodo.id == instruccion.id:
                 instr_restantes = instrucciones[contador+1:]
                 #print("instrucciones restantes",instr_restantes)
-                procesar_instrucciones_metodo(instr_restantes,instrucciones,ts)
+                hijo = Node(instr.metodo.id,parent=padre)
+                procesar_instrucciones_metodo(instr_restantes,instrucciones,hijo,ts)
                 return
                 #print("metodo no existe")
         contador +=1
@@ -550,52 +565,81 @@ def resolver_expresion_aritmetica(expNum, ts) :
 def procesar_instrucciones_main( instrucciones, ts):
     #print("procesar main")    
     if instrucciones[0].id == "main":
+        n_main = Node("main")
         nuevo_arr = instrucciones[1:]
         for instr in nuevo_arr :
             #print("instruccion:", instr)            
-            if isinstance(instr, Imprimir) : procesar_imprimir(instr, ts)
-            elif isinstance(instr, Definicion_Asignacion) : procesar_asignacion(instr, ts)    
-            elif isinstance(instr, Definicion_Asignacion_Arreglo) : procesar_asignacion_arreglo(instr, ts)    
-            elif isinstance(instr, Definicion_Asignacion_Arreglo_Multiple) : procesar_asignacion_arreglo_mul(instr, ts)    
-            elif isinstance(instr, If) : 
-                if procesar_if(instr,instrucciones, ts) == 1:
+            if isinstance(instr, Imprimir) : 
+                n_print= Node("print", parent=n_main)
+                procesar_imprimir(instr,n_print ,ts)
+                
+                #hijo = graficar_imprimir(instr,n_print,ts)
+            elif isinstance(instr, Definicion_Asignacion) : 
+                n_asing= Node("asignar", parent=n_main)
+                procesar_asignacion(instr,n_asing, ts)
+                
+                #graficar_asignacion(instr,n_asing,ts)    
+            elif isinstance(instr, Definicion_Asignacion_Arreglo) : 
+                n_arr = Node("asignar", parent=n_main)
+                procesar_asignacion_arreglo(instr,n_arr, ts)    
+            elif isinstance(instr, Definicion_Asignacion_Arreglo_Multiple) : 
+                n_arr_m = Node("asignar", parent=n_main)
+                procesar_asignacion_arreglo_mul(instr,n_arr_m, ts)    
+            elif isinstance(instr, If) :
+                print("entro al if")
+                n_if = Node("if",parent=n_main) 
+                print(n_if)
+                if procesar_if(instr,instrucciones,n_if, ts) == 1:
+                    UniqueDotExporter(n_main).to_picture("main.png")
                     return
             elif isinstance(instr, Borrar) : procesar_borrar(instr,ts)
-            #elif isinstance(instr, Definicion_Metodo) : break
+            #elif isinstance(instr, Definicion_Metodo) : n_metodo = Node("metodo",parent=n_main)
             elif isinstance(instr, Goto) : 
-                procesar_goto(instr,instrucciones,ts) 
+                procesar_goto(instr,instrucciones,n_main,ts)
+                UniqueDotExporter(n_main).to_picture("main.png") 
                 return
             elif isinstance(instr, Exit) : 
                 #print("exit")            
                 return             
             else : print('Error: instruccion no valida en main')
+        UniqueDotExporter(n_main).to_picture("main.png") 
     else:
         print("metodo principal no esta al inicio o no existe")
              
-def procesar_instrucciones_metodo(instrucciones,instr_globales, ts) :
+def procesar_instrucciones_metodo(instrucciones,instr_globales,padre, ts) :
     ## lista de instrucciones recolectadas
     #print("procesar metodo")
+    #n_metodo=Node("metodo",parent=padre)
     for instr in instrucciones :
         
             
-        if isinstance(instr, Imprimir) : procesar_imprimir(instr, ts)
-        elif isinstance(instr, Definicion_Asignacion) : procesar_asignacion(instr, ts)    
-        elif isinstance(instr, Definicion_Asignacion_Arreglo) : procesar_asignacion_arreglo(instr, ts)
+        if isinstance(instr, Imprimir) : 
+            n_print= Node("print", parent=padre)
+            procesar_imprimir(instr,n_print, ts)
+        elif isinstance(instr, Definicion_Asignacion) : 
+            n_asing= Node("asignar", parent=padre)
+            procesar_asignacion(instr,n_asing, ts)  
+        elif isinstance(instr, Definicion_Asignacion_Arreglo) : 
+            n_arr = Node("asignar", parent=padre)
+            procesar_asignacion_arreglo(instr,n_arr, ts)
+            
         elif isinstance(instr, If) : 
-            if procesar_if(instr,instr_globales, ts) == 1:
+            n_if = Node("if",parent=padre)
+            if procesar_if(instr,instr_globales,n_if, ts) == 1:
                 return
             
         elif isinstance(instr, Borrar) : procesar_borrar(instr,ts)
         #elif isinstance(instr, Definicion_Metodo) : break
         elif isinstance(instr, Goto) : 
             #print("entro al goto")
-            procesar_goto(instr,instr_globales,ts)
+            procesar_goto(instr,instr_globales,padre,ts)
             return
         elif isinstance(instr, Exit) : 
             #print("exit")            
             break                      
         else : print('Error: instruccion no valida')
-        
+
+
 
 f = open("./entrada.txt", "r")
 input = f.read()
@@ -605,3 +649,4 @@ instrucciones = g.parse(input)
 ts_global = TS.TablaDeSimbolos()
 
 procesar_instrucciones_main(instrucciones, ts_global)
+#generar_arbol(instrucciones,ts_global)
