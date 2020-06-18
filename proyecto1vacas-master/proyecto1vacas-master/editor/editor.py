@@ -17,9 +17,7 @@ sys.path.append('C:\\Users\\EEGSA\\Documents\\proyecto1vacas-master\\proyecto1va
 import syntax_pars
 
 import gramatica2 as g
-import gramaticadesc as g2
 import ts as TS
-import ts as TS2
 
 import principal as p
 from expresiones import *
@@ -580,6 +578,7 @@ class Main(QtWidgets.QMainWindow):
         input = self.text.toPlainText()
         #print(input)
         g.cleanErrores()
+        
         instrucciones = g.parse(input)
         #print("primer print:",instrucciones)
         
@@ -590,27 +589,33 @@ class Main(QtWidgets.QMainWindow):
         p.graficar_arbol(instrucciones)
         p.procesar_instrucciones_main(instrucciones, ts_global)
         cadena = p.getCadena()
-
+        print("esto tiene la cadena", cadena)
         if len(errores)>0:
+            print("hay errores")
             p.reporte_errores(errores)
-
-        p.reporte_gramatica(gram)
+        else:
+            print("no hay errores")
         p.reporte_tabla_simbolos(ts_global.simbolos)
-        print(ts_global.simbolos)
+        p.reporte_gramatica(gram)
+        #print("paso el reporte gramatica")
+        #p.reporte_tabla_simbolos(ts_global.simbolos)
+        #print("paso el reporte ts")
+        #print(ts_global.simbolos)
         #print(gram.reverse())
-        print("errores",errores)
+        #print("errores",errores)
         #print("tabla", ts_global)
         self.text2.setText(cadena)
 
     def desc(self):
+        print("descendente")
         #f = open("./entrada.txt", "r")
-        input = self.text.toPlainText()
+        #input = self.text.toPlainText()
         #print(input)
-        g2.cleanErrores()
-        instrucciones = g2.parse(input)
-        gram = g2.getGramatical()
-        p.reporte_gramatica(gram)
-        print("primer print:",instrucciones)
+        #g2.cleanErrores()
+        #instrucciones = g2.parse(input)
+        #gram = g2.getGramatical()
+        #p.reporte_gramatica(gram)
+        #print("primer print:",instrucciones)
         
 
     def debug(self):
