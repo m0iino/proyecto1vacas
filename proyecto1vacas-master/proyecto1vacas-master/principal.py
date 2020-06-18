@@ -20,7 +20,7 @@ errores = []
 def procesar_imprimir(instr, ts) :
     global cadena
     val = resolver_expresion_aritmetica(instr.cad, ts)
-    #print('> ', val,'\n')
+    print('> ', val,'\n')
     cadena = cadena+'> ' + str(val) +'\n'
     #print(cadena)
 
@@ -897,21 +897,25 @@ def reporte_errores(errores):
         d.view()
 
 def reporte_gramatica(gramatica):
+    #print("reporte gramatica",gramatica)
+    
     d = Digraph('G', filename='gramatical')
     cont=0
     nodo = ""
     nueva = gramatica[::-1]
+    #rint("nueva",nueva)
     for gram in nueva:
-        #print("esto trae:",err)
+        print("esto trae:",gram)
         nodo += '<TR><TD>'+gram+'</TD></TR>'
         
-    #print("nodo",nodo)    
+    print("nodo",nodo)    
     d.node('tab2',label='''<<TABLE>
     '''+nodo+'''
     </TABLE>>''')
     d.view()
 
 def reporte_tabla_simbolos(simbolos):
+    print("reporte ts")
     d = Digraph('G', filename='simbolos')
     cont=0
     nodo = ""
@@ -919,7 +923,7 @@ def reporte_tabla_simbolos(simbolos):
         print("esto trae:",simbolos[simbolo].id,"tipo: ",simbolos[simbolo].id,"valor ",simbolos[simbolo].valor)
         nodo += '<TR><TD>'+simbolos[simbolo].id+'</TD><TD>'+str(simbolos[simbolo].tipo)+'</TD><TD>'+str(simbolos[simbolo].valor)+'</TD></TR>'
         
-    print("nodo",nodo)    
+    #print("nodo",nodo)    
     d.node('tab3',label='''<<TABLE>
     '''+nodo+'''
     </TABLE>>''')
@@ -928,7 +932,7 @@ def reporte_tabla_simbolos(simbolos):
     
 #reporte_errores()   
 
-#f = open("./entrada.txt", "r")
+#f = open("./entrada2.txt", "r")
 #input = f.read()
 
 #instrucciones = g.parse(input)
