@@ -36,7 +36,7 @@ class TablaDeSimbolos() :
 
     def agregar(self, simbolo) :
         self.simbolos[simbolo.id] = simbolo
-    
+        
     def obtener(self, id) :
         if not id in self.simbolos :
             print('Error obtener: variable ', id, ' no definida.')

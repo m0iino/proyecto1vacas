@@ -1,15 +1,4 @@
 main:
-$a0 = 3;
-$t1 = 4;
-$t2[0] = "hola";
-if($t1<$a0) goto label0;
-if($t1>$a0) goto label0;
-print("hola2");
-label0:
-if(8>3) goto label1;
-print($t2[0]);
-label1:
-print("label1");
-
-
-
+$t0 = "holasdfa";
+$t1 = 1;
+print($t0);

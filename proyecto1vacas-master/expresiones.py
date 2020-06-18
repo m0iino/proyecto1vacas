@@ -43,9 +43,10 @@ class ExpresionNumerica:
         Esta clase representa una expresión numérica
     '''
 class ExpresionEntero:
-    def __init__(self, val = 0, tipo = 0):
+    def __init__(self, val = 0, tipo = 0, linea=0):
         self.val = val
         self.tipo = tipo
+        self.linea = linea
 
 class ExpresionArreglo:
     def __init__(self, val = 0, tipo = 0):
