@@ -17,7 +17,10 @@ sys.path.append('C:\\Users\\EEGSA\\Documents\\proyecto1vacas-master\\proyecto1va
 import syntax_pars
 
 import gramatica2 as g
+import gramaticadesc as g2
 import ts as TS
+import ts as TS2
+
 import principal as p
 from expresiones import *
 from instrucciones import *
@@ -44,6 +47,12 @@ class Main(QtWidgets.QMainWindow):
         self.ejecutar.setShortcut("Ctrl+R")
         self.ejecutar.setStatusTip("Compila los contenidos del editor")
         self.ejecutar.triggered.connect(self.run)
+
+
+        self.descendente= QtWidgets.QAction(QtGui.QIcon("C:\\Users\\EEGSA\\Documents\\proyecto1vacas-master\\proyecto1vacas-master\\editor\\iconos\\run.png"),"Ejecutar Descendente",self)
+        self.descendente.setShortcut("Ctrl+L")
+        self.descendente.setStatusTip("Compila los contenidos del editor desc")
+        self.descendente.triggered.connect(self.desc)
 
         self.debugear= QtWidgets.QAction(QtGui.QIcon("C:\\Users\\EEGSA\\Documents\\proyecto1vacas-master\\proyecto1vacas-master\\editor\\iconos\\debug.png"),"Debugear",self)
         self.debugear.setShortcut("Ctrl+E")
@@ -143,6 +152,7 @@ class Main(QtWidgets.QMainWindow):
         
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.ejecutar)
+        self.toolbar.addAction(self.descendente)
         self.toolbar.addAction(self.debugear)
         #self.toolbar.addAction(self.printAction)
         #self.toolbar.addAction(self.previewAction)
@@ -267,6 +277,7 @@ class Main(QtWidgets.QMainWindow):
         edit = menubar.addMenu("Edit")
         view = menubar.addMenu("View")
         run = menubar.addMenu("Run")
+        desc = menubar.addMenu("Desc")
         debug = menubar.addMenu("Debug")
         # Add the most important actions to the menubar
 
@@ -284,6 +295,7 @@ class Main(QtWidgets.QMainWindow):
         edit.addAction(self.findAction)
 
         run.addAction(self.ejecutar)
+        desc.addAction(self.descendente)
         debug.addAction(self.debugear)
         # Toggling actions for the various bars
         toolbarAction = QtWidgets.QAction("Toggle Toolbar",self)
@@ -590,7 +602,17 @@ class Main(QtWidgets.QMainWindow):
         #print("tabla", ts_global)
         self.text2.setText(cadena)
 
-    
+    def desc(self):
+        #f = open("./entrada.txt", "r")
+        input = self.text.toPlainText()
+        #print(input)
+        g2.cleanErrores()
+        instrucciones = g2.parse(input)
+        gram = g2.getGramatical()
+        p.reporte_gramatica(gram)
+        print("primer print:",instrucciones)
+        
+
     def debug(self):
         print("debug")
         global contador
